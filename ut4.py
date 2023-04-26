@@ -16,7 +16,7 @@ from openpyxl.styles.borders import Border, Side
 
 programVer  = "ver1.0.0";
 programName = "単体試験項目自動作成ツール『おじどうくんPY』";
-factor = 1.5
+factor = 1
 side1      = Side(style='thin', color='000000')
 border_aro = Border(top=side1, bottom=side1, left=side1, right=side1)
 border_tlr = Border(top=side1, left=side1, right=side1)
@@ -72,7 +72,7 @@ text_former = (
 text_latter = (
 " ファイルの試験を実施する",
 " の妥当性を検討すること(必要なければ削除する)",
-" が呼ばれたときに引数が正しく渡されていること\n(パラメタ数、パラメタ順序、実体orポインタ)\n(引数に最大値最小値を与えてそれぞれチェックすること)",
+" が呼ばれたときに引数が正しく渡されていること(パラメタ数、パラメタ順序、実体orポインタ)(引数に最大値最小値を与えてそれぞれチェックすること)",
 "",
 " が正しい範囲でループされること",
 "",
@@ -82,8 +82,8 @@ text_latter = (
 "",
 ": を発生させこの処理が起動されること",
 "",
-"において、関数呼び出し時に引数を正しく渡していること\n(パラメータ数、パラメータ順序、実体orポインタ)\n(戻り値が正しく処理されていること)",
-" がコールされることを確認すること\n(戻り値が正しく処理されていること)",
+"において、関数呼び出し時に引数を正しく渡していること(パラメータ数、パラメータ順序、実体orポインタ)(戻り値が正しく処理されていること)",
+" がコールされることを確認すること(戻り値が正しく処理されていること)",
 "行にある TODO 項目の内容を確認すること",
 "行と多いので、分割することを検討すること",
 )
@@ -145,6 +145,8 @@ def pcall(ws, pattern, file_num, fl, fn, func_num, func_name, pos_arg, line, tex
 
     arg_array = (file_num, fl, fn, func_num, func_name, pos_arg, line, text)
 
+    print(" allLen=%d target=%s" % (allLen, arg_array[4]))
+
 #   print ("pattern : %d" % pattern)
 #   print ("args    : %s, %s, %s, %s, %s, %s, %s, %s" % arg_array)
     if (pattern == 0):
@@ -155,6 +157,18 @@ def pcall(ws, pattern, file_num, fl, fn, func_num, func_name, pos_arg, line, tex
     elif (pattern == 2):
         ws.cell(allLen, 3).value = func_num
         ws.cell(allLen, 4).value = func_name
+    elif (pattern == 3):
+        text = ""
+    elif (pattern == 5):
+        text = ""
+    elif (pattern == 6):
+        text = ""
+    elif (pattern == 7):
+        text = ""
+    elif (pattern == 8):
+        text = ""
+    elif (pattern == 9):
+        text = ""
 
     if (pattern != 15):
         ws.cell(allLen, 5).value = pos_arg
@@ -190,6 +204,7 @@ def pcall(ws, pattern, file_num, fl, fn, func_num, func_name, pos_arg, line, tex
 def work1Line(ws, funcNum, funcName, line, work):
     global pos
 
+    print("work1Line : %s, %s, %s, %s" % (funcNum, funcName, line, work))
     if (result := re_direct_ifelse.match(work)):
         pcall(ws, 1, "","","",funcNum,funcName,pos,line, work)
     elif (result := re_func_start.match(work)):
@@ -215,16 +230,19 @@ def work1Line(ws, funcNum, funcName, line, work):
         pcall(ws, 8, "","","",funcNum,funcName,pos,line, "else")
     elif (result := re_case.match(work)):
         caseName = result.group(1)
-        pcall(ws, 9, "","","",funcNum,funcName,pos,line, caseName)
+        pcall(ws, 10, "","","",funcNum,funcName,pos,line, caseName)
     elif (result := re_default.match(work)):
-        pcall(ws, 10, "","","",funcNum,funcName,pos,line, "default")
+        pcall(ws, 11, "","","",funcNum,funcName,pos,line, "default")
     elif (result := re_switch.match(work)):
-        pcall(ws, 11, "","","",funcNum,funcName,pos,line, "switch")
-    elif (result := re_func_call.match(work)):
+        pcall(ws, 9, "","","",funcNum,funcName,pos,line, "switch")
+    elif (result := re_func_call.search(work)):
+#       print("func call match!")
         functionName = result.group(1) + "()"
         result = re.match(r"^\s*[\/]?\*", work)
         if (result == None):
             pcall(ws, 12, "","","",funcNum,funcName,pos,line, functionName)
+#   else:
+#       print("nomatch!")
 
     if (result := re_todo.match(work)):
         pcall(ws, 14, "","","",funcNum,funcName,pos,line, functionName)
@@ -278,10 +296,12 @@ def main():
             line_text = re.sub(pattern, "", line_text)
             pattern = r"\s+$"
             line_text = re.sub(pattern, "", line_text)
-            pattern = r"\/\/.*$"
-            line_text = re.sub(pattern, "", line_text)
+#           pattern = r"\/\/.*$"
+            pattern = r"(^|[^\*])\/\/.*$"
+            line_text = re.sub(pattern, r"\1", line_text)
             pattern = r"\/\*.*\*\/"
             line_text = re.sub(pattern, "", line_text)
+            print("input : %s" % line_text)
 
             if (result := re.match(r"^[a-zA-Z_][^;\(\{]", line_text)):
                 workout = workout + line_text
