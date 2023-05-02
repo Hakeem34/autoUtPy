@@ -157,6 +157,7 @@ def pcall(ws, pattern, file_num, fl, fn, func_num, func_name, pos_arg, line, tex
     elif (pattern == 2):
         ws.cell(allLen, 3).value = func_num
         ws.cell(allLen, 4).value = func_name
+        text = func_name
     elif (pattern == 3):
         text = ""
     elif (pattern == 5):
@@ -211,6 +212,7 @@ def work1Line(ws, funcNum, funcName, line, work):
         pos = 1
         funcNum += 1
         funcName = result.group(6) + "()";
+#       print("pcall6 : %s" % funcName);
         pcall(ws, 2, "","","",funcNum,funcName,pos,line, work)
     elif (result := re_return.match(work)):
         pcall(ws, 3, "","","",funcNum,funcName,pos,line, work)
